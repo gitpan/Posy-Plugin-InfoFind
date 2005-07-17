@@ -1,0 +1,165 @@
+
+==== NAME ====
+
+Posy::Plugin::InfoFind - Posy plugin to find files using their Info content.
+
+
+==== VERSION ====
+
+This describes version ``0.01'' of Posy::Plugin::InfoFind.
+
+
+==== DESCRIPTION ====
+
+This plugin checks the parameters for a find query, and uses the .info files
+defined by the Posy::Plugin::Info plugin to search for files depending on
+their Info information. Thus this depends on the Posy::Plugin::Info plugin.
+
+This plugin sets the page-type to 'info_find', so that one can make
+find-specific flavour templates. Then it falls back on the 'find' and
+'category' page-types.
+
+This fills in a few variables which can be used within your flavour
+templates.
+
+$flow_infofind_form
+Contains a search-form definition for setting the 'info_find' parameters.
+
+$flow_infofind_critera
+Contains the values which were searched on.
+
+$flow_num_found
+The number of entries which were found which matched the search parameter.
+
+
+==   Cautions   ==
+
+This plugin does not work if you have a hybrid site (partially
+static-generated, partially dynamic) and also use the
+Posy::Plugin:;Canonical plugin, since the Canonical plugin will redirect
+your search query. Also, if you have a hybrid site, don't forget to set the
+"infofind_url" config variable.
+
+
+==   Activation   ==
+
+This plugin needs to be added to the plugins list and the actions list. This
+overrides the 'select_entries' 'parse_path' 'get_alt_path_types' methods;
+therefore care needs to be taken with other plugins if they override the
+same methods.
+
+In the actions list 'infofind_set' needs to go somewhere after
+``head_template'' and before ``head_render'', since this needs to set values
+before the head is rendered.
+
+
+==   Configuration   ==
+
+This expects configuration settings in the $self->{config} hash, which, in
+the default Posy setup, can be defined in the main "config" file in the
+config directory.
+
+``infofind_field_size''
+The size to make the length of the input fields for the form. (default: 50)
+
+``infofind_url''
+The URL to use for the "action" part of the search form. This defaults to
+the global $self->{url} value, but may need to be overridden for things like
+a hybrid static/dynamic site. This is because the global $self->{url} for
+static generation needs to hide the name of the script used to generate it,
+but this plugin needs to know the path to the CGI script. If this is set,
+this plugin assumes this is a hybrid site and makes its links with explicit
+'path' parameters.
+
+
+==== INSTALLATION ====
+
+Installation needs will vary depending on the particular setup a person has.
+
+
+==   Administrator, Automatic   ==
+
+If you are the administrator of the system, then the dead simple method of
+installing the modules is to use the CPAN or CPANPLUS system.
+
+    cpanp -i Posy::Plugin::InfoFind
+
+This will install this plugin in the usual places where modules get
+installed when one is using CPAN(PLUS).
+
+
+==   Administrator, By Hand   ==
+
+If you are the administrator of the system, but don't wish to use the
+CPAN(PLUS) method, then this is for you. Take the *.tar.gz file and untar it
+in a suitable directory.
+
+To install this module, run the following commands:
+
+    perl Build.PL
+    ./Build
+    ./Build test
+    ./Build install
+
+Or, if you're on a platform (like DOS or Windows) that doesn't like the "./"
+notation, you can do this:
+
+   perl Build.PL
+   perl Build
+   perl Build test
+   perl Build install
+
+
+==   User With Shell Access   ==
+
+If you are a user on a system, and don't have root/administrator access, you
+need to install Posy somewhere other than the default place (since you don't
+have access to it). However, if you have shell access to the system, then
+you can install it in your home directory.
+
+Say your home directory is "/home/fred", and you want to install the modules
+into a subdirectory called "perl".
+
+Download the *.tar.gz file and untar it in a suitable directory.
+
+    perl Build.PL --install_base /home/fred/perl
+    ./Build
+    ./Build test
+    ./Build install
+
+This will install the files underneath /home/fred/perl.
+
+You will then need to make sure that you alter the PERL5LIB variable to find
+the modules, and the PATH variable to find the scripts (posy_one,
+posy_static).
+
+Therefore you will need to change: your path, to include
+/home/fred/perl/script (where the script will be)
+
+        PATH=/home/fred/perl/script:${PATH}
+
+the PERL5LIB variable to add /home/fred/perl/lib
+
+        PERL5LIB=/home/fred/perl/lib:${PERL5LIB}
+
+
+==== REQUIRES ====
+
+    Test::More
+    grep
+
+
+==== AUTHOR ====
+
+    Kathryn Andersen (RUBYKAT)
+    perlkat AT katspace dot com
+    http://www.katspace.com
+
+
+==== COPYRIGHT AND LICENCE ====
+
+Copyright (c) 2005 by Kathryn Andersen
+
+This program is free software; you can redistribute it and/or modify it
+under the same terms as Perl itself.
+

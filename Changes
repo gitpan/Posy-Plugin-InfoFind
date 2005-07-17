@@ -1,0 +1,11 @@
+Revision history for Posy-Plugin-InfoFind
+=========================================
+
+0.01 Sun 17 July 2005
+---------------------
+
+  * (17 Jul 2005) added sorting
+  	This now has sort fields in the search form, if dynamic
+  sorting is turned on in the Posy::Plugin::Info plugin.
+
+  * (17 Jul 2005) initial checkin
