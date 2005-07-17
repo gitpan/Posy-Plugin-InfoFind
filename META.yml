@@ -1,6 +1,6 @@
 ---
 name: Posy-Plugin-InfoFind
-version: 0.02
+version: 0.03
 author:
   - Kathryn Andersen
 abstract: Posy plugin to find files using their Info content.
@@ -13,5 +13,5 @@ build_requires:
 provides:
   Posy::Plugin::InfoFind:
     file: lib/Posy/Plugin/InfoFind.pm
-    version: 0.02
+    version: 0.03
 generated_by: Module::Build version 0.2611

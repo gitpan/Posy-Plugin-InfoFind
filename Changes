@@ -1,6 +1,13 @@
 Revision history for Posy-Plugin-InfoFind
 =========================================
 
+0.03 Sun 17 July 2005
+---------------------
+
+  * (17 Jul 2005) more header-check stuff
+  	The "is in header" method now checks both dynamic and static
+  sort orders to determine if a field should be a "header".
+
 0.02 Sun 17 July 2005
 ---------------------
 

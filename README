@@ -6,7 +6,7 @@ Posy::Plugin::InfoFind - Posy plugin to find files using their Info content.
 
 ==== VERSION ====
 
-This describes version ``0.02'' of Posy::Plugin::InfoFind.
+This describes version ``0.03'' of Posy::Plugin::InfoFind.
 
 
 ==== DESCRIPTION ====

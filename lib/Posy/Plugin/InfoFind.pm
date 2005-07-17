@@ -7,11 +7,11 @@ Posy::Plugin::InfoFind - Posy plugin to find files using their Info content.
 
 =head1 VERSION
 
-This describes version B<0.02> of Posy::Plugin::InfoFind.
+This describes version B<0.03> of Posy::Plugin::InfoFind.
 
 =cut
 
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 
 =head1 SYNOPSIS
 
@@ -484,10 +484,15 @@ sub infofind_header_field {
     my $self = shift;
     my $level = (@_ ? shift : 0);
 
-    if ($self->{config}->{info_sort_param}
-	and $self->param($self->{config}->{info_sort_param}))
+    if (($self->{config}->{info_sort_param}
+	 and $self->param($self->{config}->{info_sort_param}))
+	or $self->{config}->{info_sort_spec})
     {
-	my (@sort_fields) = $self->param($self->{config}->{info_sort_param});
+	my (@sort_fields) = (
+	    ($self->{config}->{info_sort_param}
+		and $self->param($self->{config}->{info_sort_param}))
+	    ?  $self->param($self->{config}->{info_sort_param})
+	    : @{$self->{config}->{info_sort_spec}->{order}});
 	if ($level < @sort_fields)
 	{
 	    if ($sort_fields[$level])
@@ -517,11 +522,17 @@ sub infofind_is_in_header {
     my $level = (@_ ? shift : 0);
 
     if ($field
-	and $self->{config}->{info_sort_param}
-	and $self->param($self->{config}->{info_sort_param}))
+	and (($self->{config}->{info_sort_param}
+	      and $self->param($self->{config}->{info_sort_param}))
+	     or $self->{config}->{info_sort_spec})
+       )
     {
-	my (@sort_fields) = $self->param($self->{config}->{info_sort_param});
-	for (my $i = 0; $i <= $level && $i < @sort_fields; $i++)
+	my (@sort_fields) = (
+	    ($self->{config}->{info_sort_param}
+		and $self->param($self->{config}->{info_sort_param}))
+	    ?  $self->param($self->{config}->{info_sort_param})
+	    : @{$self->{config}->{info_sort_spec}->{order}});
+	for (my $i = 0; ($i <= $level && $i < @sort_fields); $i++)
 	{
 	    if ($field eq $sort_fields[$i])
 	    {
@@ -530,7 +541,7 @@ sub infofind_is_in_header {
 	}
     }
     return 0;
-} # infofind_header_field_level
+} # infofind_is_in_header
 
 =head2 get_alt_path_types
 
