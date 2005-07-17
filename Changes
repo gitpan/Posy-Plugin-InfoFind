@@ -1,6 +1,14 @@
 Revision history for Posy-Plugin-InfoFind
 =========================================
 
+0.02 Sun 17 July 2005
+---------------------
+
+  * (17 Jul 2005) added infofind_sort_criteria
+  	Added another informative flow variable, infofind_sort_criteria
+  which one can use to say how one's query was sorted.
+  	Also tweaked the documentation.
+
 0.01 Sun 17 July 2005
 ---------------------
 

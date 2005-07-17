@@ -7,11 +7,11 @@ Posy::Plugin::InfoFind - Posy plugin to find files using their Info content.
 
 =head1 VERSION
 
-This describes version B<0.01> of Posy::Plugin::InfoFind.
+This describes version B<0.02> of Posy::Plugin::InfoFind.
 
 =cut
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 =head1 SYNOPSIS
 
@@ -39,6 +39,14 @@ This plugin sets the page-type to 'info_find', so that one can make
 find-specific flavour templates.  Then it falls back on the 'find'
 and 'category' page-types.
 
+Note that all fields you wish to be able to search on must be defined
+in the info_type_spec config variable.
+
+The search form will search from the current directory downwards.
+This enables you to customize the particular Info setup to be different
+in different directories.  If you want to search the whole site,
+the search form needs to be put in a file at the top of the site.
+
 This fills in a few variables which can be used within your
 flavour templates.
 
@@ -48,9 +56,13 @@ flavour templates.
 
 Contains a search-form definition for setting the 'info_find' parameters.
 
-=item $flow_infofind_critera
+=item $flow_infofind_criteria
 
 Contains the values which were searched on.
+
+=item $flow_infofind_sort_criteria
+
+Contains the fields which were sorted by.
 
 =item $flow_num_found
 
@@ -203,6 +215,28 @@ sub select_entries {
 		}
 	    }
 	    $flow_state->{infofind_criteria} = $find_criteria;
+	    if ($self->{config}->{info_sort_param}
+		and $self->param($self->{config}->{info_sort_param}))
+	    {
+		my (@sort_params) = $self->param($self->{config}->{info_sort_param});
+		# only use non-empty values
+		my $sort_criteria = '';
+		foreach my $sp (@sort_params)
+		{
+		    if ($sp)
+		    {
+			if ($sort_criteria)
+			{
+			    $sort_criteria .= ",$sp"
+			}
+			else
+			{
+			    $sort_criteria = $sp;
+			}
+		    }
+		}
+		$flow_state->{infofind_sort_criteria} = $sort_criteria;
+	    }
 
 	    $flow_state->{entries} = [];
 	    $self->{path}->{cat_id} =~ m#([-_.\/\w]+)#;
@@ -300,7 +334,8 @@ sub infofind_set {
 
 =head1 Helper Methods
 
-Methods which can be called from within other methods.
+Methods which can be called from within other methods, or from within
+a flavour or entry file if using a plugin such as Posy::Plugin::TextTemplate.
 
 =head2 infofind_make_form
 

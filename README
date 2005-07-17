@@ -6,7 +6,7 @@ Posy::Plugin::InfoFind - Posy plugin to find files using their Info content.
 
 ==== VERSION ====
 
-This describes version ``0.01'' of Posy::Plugin::InfoFind.
+This describes version ``0.02'' of Posy::Plugin::InfoFind.
 
 
 ==== DESCRIPTION ====
@@ -19,14 +19,25 @@ This plugin sets the page-type to 'info_find', so that one can make
 find-specific flavour templates. Then it falls back on the 'find' and
 'category' page-types.
 
+Note that all fields you wish to be able to search on must be defined in the
+info_type_spec config variable.
+
+The search form will search from the current directory downwards. This
+enables you to customize the particular Info setup to be different in
+different directories. If you want to search the whole site, the search form
+needs to be put in a file at the top of the site.
+
 This fills in a few variables which can be used within your flavour
 templates.
 
 $flow_infofind_form
 Contains a search-form definition for setting the 'info_find' parameters.
 
-$flow_infofind_critera
+$flow_infofind_criteria
 Contains the values which were searched on.
+
+$flow_infofind_sort_criteria
+Contains the fields which were sorted by.
 
 $flow_num_found
 The number of entries which were found which matched the search parameter.
