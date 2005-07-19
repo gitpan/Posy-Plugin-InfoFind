@@ -6,7 +6,7 @@ Posy::Plugin::InfoFind - Posy plugin to find files using their Info content.
 
 ==== VERSION ====
 
-This describes version ``0.03'' of Posy::Plugin::InfoFind.
+This describes version ``0.05'' of Posy::Plugin::InfoFind.
 
 
 ==== DESCRIPTION ====
@@ -28,19 +28,26 @@ different directories. If you want to search the whole site, the search form
 needs to be put in a file at the top of the site.
 
 This fills in a few variables which can be used within your flavour
-templates.
+templates. You can also use them in your entry files if you are using the
+Posy::Plugin::TextTemplate plugin.
 
 $flow_infofind_form
 Contains a search-form definition for setting the 'info_find' parameters.
 
 $flow_infofind_criteria
-Contains the values which were searched on.
+Contains the values which were searched on; useful for putting on a results
+page.
 
 $flow_infofind_sort_criteria
-Contains the fields which were sorted by.
+Contains the fields which were sorted by; useful for putting on a results
+page.
 
 $flow_num_found
-The number of entries which were found which matched the search parameter.
+The number of entries which were found which matched the search parameters.
+
+This plugin also provides some "Helper Methods" which can be called from
+within flavour templates and/or entries if one is using the
+Posy::Plugin::TextTemplate plugin.
 
 
 ==   Cautions   ==
@@ -50,6 +57,8 @@ static-generated, partially dynamic) and also use the
 Posy::Plugin:;Canonical plugin, since the Canonical plugin will redirect
 your search query. Also, if you have a hybrid site, don't forget to set the
 "infofind_url" config variable.
+
+Search result pages cannot be generated with static-generation.
 
 
 ==   Activation   ==

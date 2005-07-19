@@ -7,11 +7,11 @@ Posy::Plugin::InfoFind - Posy plugin to find files using their Info content.
 
 =head1 VERSION
 
-This describes version B<0.03> of Posy::Plugin::InfoFind.
+This describes version B<0.05> of Posy::Plugin::InfoFind.
 
 =cut
 
-our $VERSION = '0.03';
+our $VERSION = '0.05';
 
 =head1 SYNOPSIS
 
@@ -49,6 +49,8 @@ the search form needs to be put in a file at the top of the site.
 
 This fills in a few variables which can be used within your
 flavour templates.
+You can also use them in your entry files if you are using
+the Posy::Plugin::TextTemplate plugin.
 
 =over
 
@@ -58,17 +60,23 @@ Contains a search-form definition for setting the 'info_find' parameters.
 
 =item $flow_infofind_criteria
 
-Contains the values which were searched on.
+Contains the values which were searched on; useful for putting on a
+results page.
 
 =item $flow_infofind_sort_criteria
 
-Contains the fields which were sorted by.
+Contains the fields which were sorted by; useful for putting on a
+results page.
 
 =item $flow_num_found
 
-The number of entries which were found which matched the search parameter.
+The number of entries which were found which matched the search parameters.
 
 =back
+
+This plugin also provides some L</Helper Methods> which can be called
+from within flavour templates and/or entries if one is using the
+Posy::Plugin::TextTemplate plugin.
 
 =head2 Cautions
 
@@ -78,16 +86,14 @@ Posy::Plugin:;Canonical plugin, since the Canonical plugin will redirect
 your search query.  Also, if you have a hybrid site, don't forget to set
 the L</infofind_url> config variable.
 
+Search result pages cannot be generated with static-generation.
+
 =head2 Activation
 
 This plugin needs to be added to the plugins list and the actions list.
-This
-overrides the 'select_entries'
-'parse_path'
-'get_alt_path_types'
-methods;
-therefore care needs to be
-taken with other plugins if they override the same methods.
+This overrides the 'select_entries' 'parse_path' 'get_alt_path_types'
+methods; therefore care needs to be taken with other plugins if they
+override the same methods.
 
 In the actions list 'infofind_set' needs to go somewhere after
 B<head_template> and before B<head_render>, since this needs
@@ -227,7 +233,7 @@ sub select_entries {
 		    {
 			if ($sort_criteria)
 			{
-			    $sort_criteria .= ",$sp"
+			    $sort_criteria .= ", $sp"
 			}
 			else
 			{
@@ -339,11 +345,14 @@ a flavour or entry file if using a plugin such as Posy::Plugin::TextTemplate.
 
 =head2 infofind_make_form
 
-$form = $self->infofind_make_form(fields=>\@fields);
+<?perl $Posy->infofind_make_form(fields=>\@fields); perl?>
 
 Makes the InfoFind search form with the given fields;
 uses the fields defined in the info_type_spec config
 variable if no fields are given.
+
+This is useful if you wish to change which fields to search
+on, or change their order in the search form.
 
 =cut
 sub infofind_make_form {
@@ -473,11 +482,15 @@ EOT1
 
 =head2 infofind_header_field
 
-my $header_field = $self->infofind_header_field(0);
+    [==
+    $header_field = $Posy->infofind_header_field(0);
+    ==]
 
 Gives the name of the Info field which would be the header
 at this level of headers.  (Allows for multiple levels of
 header because of the possibility of using Posy::Plugin::MultiHeader)
+
+Useful for making generic search-result templates.
 
 =cut
 sub infofind_header_field {
@@ -510,10 +523,15 @@ sub infofind_header_field {
 
 =head2 infofind_is_in_header
 
-$self->infofind_is_in_header($field, $level);
+    [==
+    if ($Posy->infofind_is_in_header($field, $level)) {
+    ...
+    }
+    ==]
 
 Returns true if the field is in a header lower than
 or equal to the given level.
+Useful for making generic search-result templates.
 
 =cut
 sub infofind_is_in_header {
@@ -543,6 +561,124 @@ sub infofind_is_in_header {
     return 0;
 } # infofind_is_in_header
 
+=head2 infofind_make_index
+
+    <?perl
+    $Posy->infofind_make_index(field=>'Author',
+	category=>'fiction/stories',
+	rel_link=>'fiction/stories/series.html',
+	indexstyle=>'medium',
+	pre_alpha=>'<h2>',
+	post_alpha=>'</h2>',
+	pre_list=>'<ul>'.
+	post_list=>'</ul>',
+	pre_item=>'<li>',
+	post_item=>'</li>',
+	item_sep=>'');
+    perl?>
+
+Makes an quick-search index of the given field.  
+
+indexstyle can be 'long', 'medium' or 'short'.
+
+The medium style is the default, and makes a list of links
+made up of all the unique values of that field; each link
+is a link to a search to match that value exactly.
+
+The long style is similar to the medium style, but the list is
+split into multiple lists, grouped by the first letter.
+
+The short style is a list of just the first letter values of
+that field, with a link to search for entries with that field
+starting with that letter.
+
+=cut
+sub infofind_make_index {
+    my $self = shift;
+    my %args = (
+	indexstyle=>'medium',
+	category=>'',
+	rel_link=>'',
+	field=>'',
+	@_
+    );
+    my $field = $args{field};
+    my $cat_id = $args{category};
+
+    # figure out which entries have .info files we're interested in
+    my @search_ids = ();
+    while (my $ffile = each(%{$self->{others}}))
+    {
+	if (($ffile =~ /\.info$/)
+	    and ($cat_id eq ''
+		 or $self->{others}->{$ffile} eq $cat_id
+		 or $self->{others}->{$ffile} =~ m#^$cat_id/#))
+	{
+	    my ($ff_nobase, $suffix) = $ffile =~ /^(.*)\.(\w+)$/;
+	    my $fpath = File::Spec->abs2rel($ff_nobase,
+					    $self->{data_dir});
+	    my @path_split = File::Spec->splitdir($fpath);
+	    my $file_id = join('/', @path_split);
+	    if (exists $self->{files}->{$file_id})
+	    {
+		push @search_ids, $file_id;
+	    }
+	}
+    }
+    # get all the unique values for this field
+    # but don't add the empty value
+    my $sort_type = ($self->{config}->{info_type_spec}->{$field}->{type}
+		     ?  $self->{config}->{info_type_spec}->{$field}->{type}
+		     : 'string');
+    my %values = ();
+    foreach my $fid (@search_ids)
+    {
+	my $val = $self->info($fid, field=>$field);
+	$values{$val} = $val if $val;
+	# set the "sorting" value
+	if ($val and $sort_type eq 'title')
+	{
+	    # strip the A and The from titles
+	    $values{$val} =~ s/^(The\s+|A\s+)//;
+	}
+    }
+    # sort the values taking into account the info type
+    my @indvals = sort {
+	if ($sort_type eq 'number')
+	{
+	    return ($a <=> $b);
+	}
+	elsif ($sort_type eq 'title')
+	{
+	    return $values{$a} cmp $values{$b};
+	}
+	else
+	{
+	    return (uc($a) cmp uc($b));
+	}
+    } keys %values;
+
+    my $indlist = '';
+    if ($args{indexstyle} eq 'long')
+    {
+	my @lol = $self->_infofind_alphasplit(field=>$field,
+	    field_values=>\@indvals);
+	$indlist = $self->_infofind_long_links(\@lol, %args);
+    }
+    elsif ($args{indexstyle} eq 'short')
+    {
+	my @letters = $self->_infofind_alphasplit(field=>$field,
+	    field_values=>\@indvals,
+	    alpha_only=>1);
+	$indlist = $self->_infofind_make_links(\@letters, %args);
+    }
+    else # medium
+    {
+	$indlist = $self->_infofind_make_links(\@indvals, %args);
+    }
+    return $indlist;
+} # infofind_make_index
+
 =head2 get_alt_path_types
 
 my @alt_path_types = $self->get_alt_path_types($path_type)
@@ -570,6 +706,178 @@ sub get_alt_path_types {
 	return $self->SUPER::get_alt_path_types($path_type);
     }
 } # get_alt_path_types
+
+=head1 Private Methods
+
+=head2 _infofind_alphasplit
+
+$list = $self->_infofind_alphasplit(field_values=>\@vals,
+	alpha_only=>0);
+
+Take a list of values, and split by alpha.
+If alpha_only is true, return a list of just the
+the first alpha letter of all the values.
+If false (the default) return a list of lists, containing
+both the first-letters and the values grouped by first-letter.
+
+=cut
+sub _infofind_alphasplit {
+    my $self = shift;
+    my %args = (
+	field=>undef,
+	field_values=>undef,
+	alpha_only=>0,
+	@_
+    );
+    my @vals = @{$args{field_values}};
+
+    my @list_of_lists = ();
+    my $prev_alpha = '';
+    my $sublist = [];
+    my $sort_type = ($self->{config}->{info_type_spec}->{$args{field}}->{type}
+		     ?  $self->{config}->{info_type_spec}->{$args{field}}->{type}
+		     : 'string');
+    foreach my $val (@vals)
+    {
+	my $alpha = uc(substr($val,0,1));
+	# for titles, drop the leading A or The
+	if ($sort_type eq 'title'
+	    and $val =~ m/^(The\s+|A\s+)(.)/)
+	{
+	    $alpha = uc($2);
+	}
+	if ($alpha ne $prev_alpha)
+	{
+	    push @list_of_lists, $sublist
+		if (@{$sublist} and !$args{apha_only});
+	    push @list_of_lists, $alpha;
+	    $prev_alpha = $alpha;
+	    $sublist = [];
+	}
+	push @{$sublist}, $val if (!$args{alpha_only});
+    }
+    push @list_of_lists, $sublist
+	if (@{$sublist} and !$args{apha_only});
+    return @list_of_lists;
+} # _infofind_alphasplit
+
+=head2 _infofind_long_links
+
+Traverse the given list of lists values to make a set of
+lists of links.
+
+=cut
+sub _infofind_long_links {
+    my $self = shift;
+    my $lol_ref = shift;
+    my %args = (
+	field=>undef,
+	category=>'',
+	rel_link=>'',
+	pre_alpha=>'<h2>',
+	post_alpha=>'</h2>',
+	@_
+    );
+    my @list_of_lists = @{$lol_ref};
+
+    my @items = ();
+    foreach my $ll (@list_of_lists)
+    {
+	# if it's not a ref, it's an alpha
+	if (!ref $ll)
+	{
+	    my $item;
+	    my $label = $ll;
+	    $item = join('',
+			 $args{pre_alpha},
+			 $label,
+			 $args{post_alpha}
+			);
+	    push @items, $item;
+	}
+	else # a list
+	{
+	    push @items, $self->_infofind_make_links($ll, %args);
+	}
+    }
+    my $list = join("\n", @items);
+    return $list;
+} # _infofind_long_links
+
+=head2 _infofind_make_links
+
+Traverse the given list of values to make a list of links.
+
+=cut
+sub _infofind_make_links {
+    my $self = shift;
+    my $list_ref = shift;
+    my %args = (
+	field=>undef,
+	indexstyle=>'medium',
+	category=>'',
+	rel_link=>'',
+	pre_list=>'<ul>',
+	post_list=>'</ul>',
+	pre_item=>'<li>',
+	post_item=>'</li>',
+	item_sep=>"\n",
+	@_
+    );
+
+    # make a default sort order
+    my @sort_order = ($args{field});
+    if ($self->{config}->{info_sort_spec}->{order})
+    {
+	foreach my $fld (@{$self->{config}->{info_sort_spec}->{order}})
+	{
+	    # skip the index field sonce it's first
+	    if ($fld ne $args{field})
+	    {
+		push @sort_order, $fld;
+	    }
+	}
+    }
+    my @sort_q = ();
+    foreach my $fld (@sort_order)
+    {
+	push @sort_q, join('',
+	    $self->{config}->{info_sort_param}, '=', $fld);
+    }
+    my $sort_q = join(';', @sort_q);
+    my $rel_link = ($args{rel_link} ? $args{rel_link} : $args{category});
+    my $sort_type = ($self->{config}->{info_type_spec}->{$args{field}}->{type}
+		     ?  $self->{config}->{info_type_spec}->{$args{field}}->{type}
+		     : 'string');
+    my @items = ();
+    foreach my $val (@{$list_ref})
+    {
+	my $item;
+	my $label = $val;
+	my $match_q = $val;
+	if ($sort_type eq 'title')
+	{
+	    $match_q = '(A |The )*' . $val;
+	}
+	my $link;
+	$link = join('', 
+		     '<a href="', $self->{url}, '/', $rel_link,
+		     '?info_find=1;', 
+		     $self->{config}->{infofind_field_prefix},
+		     $args{field}, '=^', $match_q,
+		     ($args{indexstyle} eq 'short' ? '' : '$'),
+		     ';', $sort_q,
+		     '">',
+		     $label,
+		     '</a>');
+	$item = join('', $args{pre_item}, $link,
+		     $args{post_item});
+	push @items, $item;
+    }
+    my $list = join($args{item_sep}, @items);
+    return join('', $args{pre_list}, $list, $args{post_list});
+
+} # _infofind_make_links
 
 =head1 INSTALLATION
 

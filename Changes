@@ -1,6 +1,22 @@
 Revision history for Posy-Plugin-InfoFind
 =========================================
 
+0.05 Tue 19 July 2005
+---------------------
+
+  * (19 Jul 2005) improvements to quick-search index
+  	Sorting has been improved, and the query-links have been improved,
+  taking into account the info_type_spec defined by Posy::Plugin::Info.
+
+0.04 Tue 19 July 2005
+---------------------
+
+  * (19 Jul 2005) quick-search indexes
+  	Added a quick-search index facility with the infofind_make_index
+  method.  This makes a list of links based on a given Info field, each
+  link being a search-query URL for one value of that field.
+  	Note that this does not work for static generation.
+
 0.03 Sun 17 July 2005
 ---------------------
 
