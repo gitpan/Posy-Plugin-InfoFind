@@ -1,17 +1,17 @@
 ---
 name: Posy-Plugin-InfoFind
-version: 0.05
+version: 0.0501
 author:
   - Kathryn Andersen
 abstract: Posy plugin to find files using their Info content.
 license: perl
 requires:
-  Posy: 0.97
-  Posy::Plugin::Info: 0.0401
+  Posy: 0.98
+  Posy::Plugin::Info: 0.05
 build_requires:
   Test::More: 0
 provides:
   Posy::Plugin::InfoFind:
     file: lib/Posy/Plugin/InfoFind.pm
-    version: 0.05
+    version: 0.0501
 generated_by: Module::Build version 0.2611

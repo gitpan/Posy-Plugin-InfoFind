@@ -7,11 +7,11 @@ Posy::Plugin::InfoFind - Posy plugin to find files using their Info content.
 
 =head1 VERSION
 
-This describes version B<0.05> of Posy::Plugin::InfoFind.
+This describes version B<0.0501> of Posy::Plugin::InfoFind.
 
 =cut
 
-our $VERSION = '0.05';
+our $VERSION = '0.0501';
 
 =head1 SYNOPSIS
 
@@ -855,10 +855,18 @@ sub _infofind_make_links {
 	my $item;
 	my $label = $val;
 	my $match_q = $val;
+	# escape special characters
+	$match_q =~ s#\(#\\\(#g;
+	$match_q =~ s#\)#\\\)#g;
+	$match_q =~ s#\[#\\\[#g;
+	$match_q =~ s#\]#\\\]#g;
+	$match_q =~ s#'#.#g;
+	$match_q =~ s#"#.#g;
 	if ($sort_type eq 'title')
 	{
-	    $match_q = '(A |The )*' . $val;
+	    $match_q = '(A |The )*' . $match_q;
 	}
+	$match_q = $self->{cgi}->url_encode($match_q);
 	my $link;
 	$link = join('', 
 		     '<a href="', $self->{url}, '/', $rel_link,
