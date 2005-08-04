@@ -7,11 +7,11 @@ Posy::Plugin::InfoFind - Posy plugin to find files using their Info content.
 
 =head1 VERSION
 
-This describes version B<0.0501> of Posy::Plugin::InfoFind.
+This describes version B<0.0502> of Posy::Plugin::InfoFind.
 
 =cut
 
-our $VERSION = '0.0501';
+our $VERSION = '0.0502';
 
 =head1 SYNOPSIS
 
@@ -215,9 +215,13 @@ sub select_entries {
 		if ($self->param($fparam))
 		{
 		    my $pval = $self->param($fparam);
-		    $pval =~ /([^`'"]+)/; # untaint
+		    $pval =~ /([^`]+)/; # untaint
 		    $find_check{$fld} = $1;
-		    $find_criteria .= " $fld=$pval";
+		    $find_criteria .= " $fld=$1";
+		    # replace unhelpful characters
+		    $find_check{$fld} =~ s/'/./g;
+		    $find_check{$fld} =~ s/"/./g;
+		    $find_check{$fld} =~ s#/#.#g;
 		}
 	    }
 	    $flow_state->{infofind_criteria} = $find_criteria;

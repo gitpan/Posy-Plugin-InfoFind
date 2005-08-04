@@ -1,6 +1,14 @@
 Revision history for Posy-Plugin-InfoFind
 =========================================
 
+0.0502 Fri 05 August 2005
+-------------------------
+
+  * (5 Aug 2005) fix for searches
+  	For some search values, this wasn't getting the whole value
+  due to the way the untainting went.  Fixed that, and replaced some
+  troublesome characters.
+
 0.0501 Sat 23 July 2005
 -----------------------
 
